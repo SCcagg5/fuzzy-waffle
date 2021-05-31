@@ -22,7 +22,7 @@ services:
     volumes:
       - ./back/python:/home/api:ro
   
-  back-python:
+  back-node:
     build:
       context: ./
       dockerfile: Dockerfile.node.back
