@@ -1,4 +1,6 @@
-FROM node:10
+FROM node:14-buster
+
+MAINTAINER Courtel Eliot <eliot.courtel@wanadoo.fr>
 WORKDIR /usr/src/app
 
 COPY ./back/node/package*.json ./
