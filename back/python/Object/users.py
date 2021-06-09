@@ -16,13 +16,13 @@ secret_path = "./secret/"
 logging.basicConfig(format='%(asctime)s %(message)s', datefmt='[ %m/%d/%Y-%I:%M:%S%p ]')
 
 class user:
-  def __init__(self, id = -1):
-    if id is None:
-      id = -1
-    self.id = str(id)
-    self.red = get_conn().db("auth").table('users')
+    def __init__(self, id = -1):
+        if id is None:
+            id = -1
+        self.id = str(id)
+        self.red = get_conn().db("auth").table('users')
   
-  def verify(self, token):
+    def verify(self, token):
         if not isinstance(token, str):
             return [False, "Invalid param type"]
         try:
