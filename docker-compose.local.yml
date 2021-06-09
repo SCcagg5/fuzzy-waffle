@@ -45,7 +45,8 @@ services:
     container_name: back-python
     tty: true
     restart: always
-    depends_on: rethink
+    depends_on: 
+      - rethink
     networks:
       - db-net
       - proxy
@@ -71,7 +72,8 @@ services:
     container_name: back-node
     tty: true
     restart: always
-    depends_on: rethink
+    depends_on: 
+      - rethink
     networks:
       - db-net
       - proxy
