@@ -12,6 +12,7 @@ import logging
 from .rethink import get_conn, r
 
 secret_path = "./secret/"
+
 logging.basicConfig(format='%(asctime)s %(message)s', datefmt='[ %m/%d/%Y-%I:%M:%S%p ]')
 
 class user:
@@ -24,7 +25,10 @@ class user:
   def verify(self, token):
         if not isinstance(token, str):
             return [False, "Invalid param type"]
-        public_key = open(f'{secret_path}jwt-key.pub').read()
+        try:
+          public_key = open(f'{secret_path}jwt-key.pub').read()
+        except:
+          return [False, "Public key isn't defined", 500]
         try:
             payload = jwt.decode(
                 token,
