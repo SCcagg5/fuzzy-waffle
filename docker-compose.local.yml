@@ -15,11 +15,11 @@ services:
         - 80:80
         - 443:443
     volumes:
-        - ../Proxy/conf/proxy.conf:/etc/nginx/conf.d/my_proxy.conf:ro
-        - ../Proxy/logs/global:/var/log/nginx
-        - ../Proxy/vhost:/etc/nginx/vhost.d
-        - ../Proxy/data/html:/usr/share/nginx/html
-        - ../Proxy/data/certs:/etc/nginx/certs:ro
+        - ../proxy/conf/proxy.conf:/etc/nginx/conf.d/my_proxy.conf:ro
+        - ../proxy/logs/global:/var/log/nginx
+        - ../proxy/vhost:/etc/nginx/vhost.d
+        - ../proxy/data/html:/usr/share/nginx/html
+        - ../proxy/data/certs:/etc/nginx/certs:ro
         - /var/run/docker.sock:/tmp/docker.sock:ro
     networks:
         - proxy
@@ -29,9 +29,9 @@ services:
     container_name: letsencrypt
     restart: always
     volumes:
-        - ../Proxy/vhost:/etc/nginx/vhost.d
-        - ../Proxy/data/html:/usr/share/nginx/html
-        - ../Proxy/data/certs:/etc/nginx/certs:rw
+        - ../proxy/vhost:/etc/nginx/vhost.d
+        - ../proxy/data/html:/usr/share/nginx/html
+        - ../proxy/data/certs:/etc/nginx/certs:rw
         - /var/run/docker.sock:/var/run/docker.sock:ro
     depends_on:
         - nginx
