@@ -60,4 +60,4 @@ class user:
             return [False, "Invalid jwt", 400]
         if self.data() is None:
             return [False, "User does not exist", 400]
-        return [True, {"usr_id": id, "email" email}, None]
+        return [True, {"usr_id": id, "email": email}, None]
