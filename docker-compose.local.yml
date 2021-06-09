@@ -1,8 +1,43 @@
 version: '3'
-networks:   
-  default:
+networks:
+  db-net:
+    internal: true
+  proxy:
 
 services:
+  nginx:
+    image: jwilder/nginx-proxy:alpine
+    container_name: nginx
+    restart: always
+    labels:
+        com.github.jrcs.letsencrypt_nginx_proxy_companion.nginx_proxy: 'true'
+    ports:
+        - 80:80
+        - 443:443
+    volumes:
+        - ../Proxy/conf/proxy.conf:/etc/nginx/conf.d/my_proxy.conf:ro
+        - ../Proxy/logs/global:/var/log/nginx
+        - ../Proxy/vhost:/etc/nginx/vhost.d
+        - ../Proxy/data/html:/usr/share/nginx/html
+        - ../Proxy/data/certs:/etc/nginx/certs:ro
+        - /var/run/docker.sock:/tmp/docker.sock:ro
+    networks:
+        - proxy
+
+  letsencrypt:
+    image: jrcs/letsencrypt-nginx-proxy-companion
+    container_name: letsencrypt
+    restart: always
+    volumes:
+        - ../Proxy/vhost:/etc/nginx/vhost.d
+        - ../Proxy/data/html:/usr/share/nginx/html
+        - ../Proxy/data/certs:/etc/nginx/certs:rw
+        - /var/run/docker.sock:/var/run/docker.sock:ro
+    depends_on:
+        - nginx
+    networks:
+        - proxy
+            
   back-python:
     build:
       context: ./
@@ -10,10 +45,12 @@ services:
     container_name: back-python
     tty: true
     restart: always
+    depends_on: rethink
     networks:
-      - default
-    ports:
-      - 8080:8080
+      - db-net
+      - proxy
+    expose:
+      - 8080
     healthcheck:
       test: exit $$( curl -so /dev/null --fail http://127.0.0.1:8080 && echo 0 || echo 1 )
       interval: 30s
@@ -21,6 +58,11 @@ services:
       retries: 1
     volumes:
       - ./back/python:/home/api:ro
+    environment:
+      VIRTUAL_HOST: auth.${DOMAIN}
+      VIRTUAL_PORT: 8080
+      LETSENCRYPT_HOST: auth.${DOMAIN}
+      LETSENCRYPT_EMAIL: ${EMAIL}
   
   back-node:
     build:
@@ -29,10 +71,12 @@ services:
     container_name: back-node
     tty: true
     restart: always
+    depends_on: rethink
     networks:
-      - default
-    ports:
-      - 8081:8080
+      - db-net
+      - proxy
+    expose:
+      - 8080
     healthcheck:
       test: exit $$( curl -so /dev/null --fail http://127.0.0.1:8080 && echo 0 || echo 1 )
       interval: 30s
@@ -40,19 +84,28 @@ services:
       retries: 1
     volumes:
       - ./back/node:/home/api:ro
-
+    environment:
+      VIRTUAL_HOST: project.${DOMAIN}
+      VIRTUAL_PORT: 8080
+      LETSENCRYPT_HOST: project.${DOMAIN}
+      LETSENCRYPT_EMAIL: ${EMAIL}
 
   rethink:
     image: rethinkdb:latest
     container_name: rethink
     restart: always
     networks:
-      - default
-    ports:
-      - 8082:8080
+      - db-net
+      - proxy
     expose:
+      - 8080
       - 28015
     volumes:
       - ./back/rethink/data:/data
     command: rethinkdb --bind all -d /data
+      environment:
+      VIRTUAL_HOST: db.${DOMAIN}
+      VIRTUAL_PORT: 8080
+      LETSENCRYPT_HOST: db.${DOMAIN}
+      LETSENCRYPT_EMAIL: ${EMAIL}
     
